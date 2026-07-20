@@ -1,0 +1,27 @@
+{
+  "carpetas": [
+    {
+      "id": "oficina-tecnica",
+      "nombre": "Oficina Técnica",
+      "archivos": [
+        { "nombre": "Manual de procedimientos.pdf", "driveUrl": "https://drive.google.com/REEMPLAZAR-1" },
+        { "nombre": "Protocolo de buceo.pdf", "driveUrl": "https://drive.google.com/REEMPLAZAR-2" }
+      ]
+    },
+    {
+      "id": "zona-norte",
+      "nombre": "Zona Norte",
+      "archivos": [
+        { "nombre": "Boletín de seguridad Julio 2026.pdf", "driveUrl": "https://drive.google.com/REEMPLAZAR-3" }
+      ]
+    },
+    {
+      "id": "biblioteca-digital",
+      "nombre": "Biblioteca Digital",
+      "archivos": [
+        { "nombre": "Reglamento del club.pdf", "driveUrl": "https://drive.google.com/REEMPLAZAR-4" },
+        { "nombre": "Libreta electrónica.pdf", "driveUrl": "https://drive.google.com/REEMPLAZAR-5" }
+      ]
+    }
+  ]
+}
