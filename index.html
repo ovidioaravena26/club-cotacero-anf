@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Club Deportivo Cota Cero ANF - Prototipo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  html,body{margin:0;padding:0;background:#1a1d2e;font-family:-apple-system,Segoe UI,Roboto,sans-serif;}
+  #stage{position:relative;margin:20px auto;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5);border-radius:24px;background:#000;}
+  .screen{position:absolute;top:0;left:0;overflow:hidden;opacity:0;pointer-events:none;transition:opacity .3s ease-out;}
+  .screen.active{opacity:1;pointer-events:auto;position:relative;}
+  .shp{box-sizing:border-box;}
+  .txt{font-size:16px;line-height:1.3;}
+  #nav-hint{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);color:#8aa;font-size:12px;font-family:sans-serif;}
+  #reset-btn{position:fixed;top:10px;right:10px;background:#0089d1;color:#fff;border:none;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;}
+  #folders-btn{position:fixed;top:10px;left:10px;background:#0089d1;color:#fff;border:none;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;}
+  #carpetas-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;align-items:center;justify-content:center;}
+  #carpetas-modal.open{display:flex;}
+  #carpetas-box{background:#fff;border-radius:16px;width:340px;max-height:70vh;overflow:auto;padding:20px;position:relative;}
+  #carpetas-close{position:absolute;top:10px;right:14px;cursor:pointer;font-size:18px;color:#666;}
+  .carpeta-item,.archivo-item{display:flex;gap:10px;align-items:center;padding:10px 6px;border-bottom:1px solid #eee;cursor:pointer;color:#144;text-decoration:none;font-size:15px;}
+  .carpeta-back{cursor:pointer;color:#0089d1;margin-bottom:10px;font-size:14px;}
+</style>
+</head>
+<body>
+<button id="reset-btn" onclick="goTo(START, true)">⟲ Reiniciar</button>
+<button id="folders-btn" onclick="openCarpetas()">📁 Carpetas</button>
+<div id="stage"></div>
+<div id="nav-hint">Toca la pantalla para avanzar (donde haya interacción configurada)</div>
+
+<div id="carpetas-modal">
+  <div id="carpetas-box">
+    <span id="carpetas-close" onclick="closeCarpetas()">✕</span>
+    <h3 style="margin-top:0;">Carpetas</h3>
+    <div id="carpetas-root">Cargando…</div>
+  </div>
+</div>
+
+<script src="firebase-config.js"></script>
+<script>window.firebaseConfig = firebaseConfig;</script>
+<script src="folders.js"></script>
+<script>
+function openCarpetas(){
+  document.getElementById('carpetas-modal').classList.add('open');
+  window.bootCarpetas();
+}
+function closeCarpetas(){
+  document.getElementById('carpetas-modal').classList.remove('open');
+}
+</script>
+
+<script>
+const START = "1b8ee3b6-fc0d-46ed-bc62-319b6eed8442"; // iPhone 17, Pro Max – 1
+
+let interactions = {};
+let artboards = {};
+let timers = [];
+
+async function boot() {
+  const [screensHtml, interData, abData] = await Promise.all([
+    fetch('screens.html').then(r => r.text()),
+    fetch('interactions.json').then(r => r.json()),
+    fetch('artboards.json').then(r => r.json())
+  ]);
+  document.getElementById('stage').innerHTML = screensHtml;
+  interactions = interData;
+  artboards = abData;
+  goTo(START, true);
+}
+
+function clearTimers() {
+  timers.forEach(t => clearTimeout(t));
+  timers = [];
+}
+
+function goTo(artboardId, first) {
+  clearTimers();
+  document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById('s-' + artboardId);
+  if (!el) { console.warn('Pantalla no encontrada:', artboardId); return; }
+
+  const stage = document.getElementById('stage');
+  stage.style.width = el.style.width;
+  stage.style.height = el.style.height;
+
+  el.onclick = null;
+  const inters = interactions[artboardId] || [];
+
+  inters.forEach(inter => {
+    const durMs = (inter.duration || 0.3) * 1000;
+    if (inter.trigger === 'time') {
+      const timer = setTimeout(() => goTo(inter.dest), durMs);
+      timers.push(timer);
+    } else if (inter.trigger === 'tap') {
+      el.style.cursor = 'pointer';
+      el.onclick = () => goTo(inter.dest);
+    }
+  });
+
+  requestAnimationFrame(() => el.classList.add('active'));
+}
+
+boot();
+</script>
+</body>
+</html>
